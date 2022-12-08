@@ -8,7 +8,7 @@
 
 - 安装 requests
 ~~~
-pip3 install requests
+pip install requests
 ~~~
 
 - 修改 config.py 里的参数
