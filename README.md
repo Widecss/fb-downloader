@@ -11,14 +11,9 @@
 pip install requests
 ~~~
 
-- 修改 config.py 里的参数
+- 修改 config.py 里的参数，运行 app.py
 ~~~
-vim config.py
-~~~
-
-- 运行 app.py
-~~~
-python3 app.py
+python app.py
 ~~~
 
 ## TODO LIST
