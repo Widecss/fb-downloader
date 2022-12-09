@@ -5,47 +5,13 @@
 """
 import json
 import logging
+import sys
+from io import BytesIO
 
 import parse
 import util
 from api import APIWrapper
-
-
-class Script:
-    creator_id = r"shiratamaco"
-    """作者 ID (作者主页的 URL 里那个)"""
-
-    start_item_id = "4070200"
-    """从这个 ID 开始, ID 在链接末尾, 为空从最新开始"""
-
-    end_item_id = ""
-    """爬完这个 ID 就终止脚本, 为空则爬到最早"""
-
-    """需要单爬一个的时候，只需要把 start_item_id 和 end_item_id 设置成一样的就行了"""
-
-
-class Network:
-    cookie = r""
-    """Cookie, 其实只填 FANBOXSESSID 就行了, 如果希望保险一点可以填全部"""
-
-    proxy = ""
-    """代理"""
-
-    sleep_time = 1
-    """每次网络请求的停顿时间, 单位秒, 觉得太慢了改成 0 也行（笑"""
-
-
-class File:
-    default_dir = f"./{Script.creator_id}"
-    """输出文件夹, 默认是和作者 ID 一致"""
-
-    save_restricted_tip = True
-    """遇到受限制的, 把月费高于 xxx 才能浏览这个提示保存下来"""
-
-
-class Logger:
-    logger_level = "info"
-    """显示的日志等级"""
+from config import Logger, File, Script
 
 
 class FileMixin:
@@ -92,14 +58,10 @@ class Crawler(FileMixin):
         )
 
         # ---------- api ----------
-        api = APIWrapper()
-        api.set_cookie(Network.cookie)
-        api.set_proxies(Network.proxy)
-        api.set_request_time_sleep(Network.sleep_time)
-        self.api = api
+        if util.check_cookie() is False:
+            sys.exit(-1)
 
-        # ---------- util ----------
-        util.set_default_dir(File.default_dir)
+        self.api = APIWrapper()
 
         # ---------- other ----------
         self.start_switch = False
@@ -121,8 +83,13 @@ class Crawler(FileMixin):
         text, files = parse.parse(item["type"], body)
         util.save_data(dir_name, "text.txt", text)
 
-        for file_name, file_url in files:
-            buffer = self.api.open_download_buffer(file_url)
+        for file_name, data_type, data_content in files:
+            if data_type == "url":
+                buffer = self.api.open_download_buffer(data_content)
+            elif data_type == "text":
+                buffer = BytesIO(data_content.encode(File.encoding))
+            else:
+                raise TypeError(f"意外的保存文件类型：{data_type}")
 
             # if util.file_exists(dir_name, file_name):
             #     file_name = util.add_suffix(dir_name, file_name)
@@ -145,7 +112,7 @@ class Crawler(FileMixin):
 
         dir_name = self.create_dir(_id, _title)
 
-        if item:
+        if File.save_raw_json and item:
             self.save_raw(dir_name, item)
 
         if item["coverImageUrl"]:
@@ -201,7 +168,7 @@ class Crawler(FileMixin):
             if self.loop_item(items):
                 return
 
-        logging.info(f"{count} 个项目保存完毕")
+        logging.info(f"{count} 个内容保存完毕")
 
     def run(self):
         page_url_list = self.api.paginate_creator(creator_id=Script.creator_id)

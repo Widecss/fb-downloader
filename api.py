@@ -6,10 +6,7 @@ import time
 
 import requests
 
-
-class ApiUrl:
-    PAGINATE_CREATOR = r"https://api.fanbox.cc/post.paginateCreator"
-    POST_INFO = r"https://api.fanbox.cc/post.info"
+from config import ApiUrl, Network
 
 
 def _retry(func):
@@ -48,7 +45,7 @@ def _return_body_or_log_error(func):
 
 
 class DownloadBuffer:
-    # 1MB/read
+    # 1MB/tick
     ONCE_READ = 1024 * 1024
 
     def __init__(self, response: requests.Response = None, limit_speed: int = 0):
@@ -72,25 +69,19 @@ class _NetworkWrapper:
             "user-agent": r"Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                           r"AppleWebKit/537.36 (KHTML, like Gecko) "
                           r"Chrome/97.0.4692.99 "
-                          r"Safari/537.36"
+                          r"Safari/537.36",
+            "cookie": Network.cookie
         }
-        self.proxies = {}
-        self.sleep_time = 1
-        self.limit_speed = 0
 
-    def set_cookie(self, cookie):
-        self.headers["cookie"] = cookie
-
-    def set_proxies(self, url):
-        if url:
-            self.proxies["http"] = url
-            self.proxies["https"] = url
-
-    def set_request_time_sleep(self, sleep_time):
-        self.sleep_time = sleep_time
-
-    def set_stream_speed_limit(self, limit_speed):
-        self.limit_speed = limit_speed
+        self.proxies = None
+        if Network.proxy:
+            if isinstance(Network.proxy, str):
+                self.proxies = {
+                    "http": Network.proxy,
+                    "https": Network.proxy
+                }
+            elif isinstance(Network.proxy, dict):
+                self.proxies = Network.proxy
 
     @staticmethod
     def _get_body_or_log_error(method, response):
@@ -103,13 +94,8 @@ class _NetworkWrapper:
 
     @_retry
     def _request(self, method, *args, **kwargs) -> requests.Response:
-        time.sleep(self.sleep_time)
-        if self.proxies:
-            _proxies = self.proxies
-        else:
-            _proxies = None
-
-        return method(*args, **kwargs, proxies=_proxies, headers=self.headers)
+        time.sleep(Network.sleep_time)
+        return method(*args, **kwargs, proxies=self.proxies, headers=self.headers)
 
 
 class APIWrapper(_NetworkWrapper):
@@ -148,10 +134,10 @@ class APIWrapper(_NetworkWrapper):
     def open_download_buffer(self, url) -> DownloadBuffer:
         response = self._request(method=requests.get, url=url, stream=True)
         if response.status_code == 200:
-            return DownloadBuffer(response, self.limit_speed)
+            return DownloadBuffer(response)
         else:
             logging.error(f"download file url({url}) error: {response.status_code}")
-            return DownloadBuffer(None, self.limit_speed)
+            return DownloadBuffer(None)
 
 
 if __name__ == '__main__':
