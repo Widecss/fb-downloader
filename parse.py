@@ -34,7 +34,8 @@ class _ArticleParser:
         }
         self._url_embed_parse_func = {
             "fanbox.post": self.__url_embed_fanbox_post,
-            "html.card": self.__url_embed_html_card
+            "html.card": self.__url_embed_html_card,
+            "html": self.__url_embed_html_card
         }
 
     @staticmethod

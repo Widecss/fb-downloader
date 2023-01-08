@@ -4,7 +4,7 @@
 
 
 class Script:
-    creator_id: str = r"tsunakama"
+    creator_id: str = r"shiratamaco"
     """作者 ID (作者主页的 URL 里那个)"""
 
     start_item_id: str = ""
@@ -25,6 +25,14 @@ class Network:
 
     sleep_time: float = 1
     """防止 429: Too Many Requests 的间隔, 单位秒, 觉得太慢了改成 0 也行"""
+
+    user_agent = (
+        r"Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        r"AppleWebKit/537.36 (KHTML, like Gecko) "
+        r"Chrome/97.0.4692.99 "
+        r"Safari/537.36"
+    )
+    """UA"""
 
 
 class File:
