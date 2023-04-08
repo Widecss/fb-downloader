@@ -58,6 +58,6 @@ class Logger:
 
 
 class ApiUrl:
-    HOME_PAGE: str = "https://www.fanbox.cc/"
+    ORIGIN: str = f"https://{Script.creator_id}.fanbox.cc"
     PAGINATE_CREATOR: str = "https://api.fanbox.cc/post.paginateCreator"
     POST_INFO: str = "https://api.fanbox.cc/post.info"

@@ -65,7 +65,7 @@ class DownloadBuffer:
 class _NetworkWrapper:
     def __init__(self):
         self.headers = {
-            "origin": ApiUrl.HOME_PAGE,
+            "origin": ApiUrl.ORIGIN,
             "user-agent": Network.user_agent,
             "cookie": Network.cookie
         }
