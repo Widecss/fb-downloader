@@ -29,7 +29,7 @@ class Network:
     user_agent = (
         r"Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         r"AppleWebKit/537.36 (KHTML, like Gecko) "
-        r"Chrome/97.0.4692.99 "
+        r"Chrome/111.0.0.0 "
         r"Safari/537.36"
     )
     """UA"""
